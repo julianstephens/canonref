@@ -123,12 +123,12 @@ func (r BibleRef) Validate(tbl *Table) error {
 // Book represents a book of the Bible, including its OSIS code,
 // name, aliases, testament, order, and number of chapters.
 type Book struct {
-	OSIS      string
-	Name      string
-	Aliases   []string
-	Testament string
-	Order     int
-	Chapters  int
+	OSIS      string   `json:"osis"`
+	Name      string   `json:"name"`
+	Aliases   []string `json:"aliases"`
+	Testament string   `json:"testament"`
+	Order     int      `json:"order"`
+	Chapters  int      `json:"chapters"`
 }
 
 // Validate checks if the Book has valid data and returns an error if any validation fails.
