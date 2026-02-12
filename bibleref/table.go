@@ -6,6 +6,13 @@ import (
 	"github.com/julianstephens/canonref/util"
 )
 
+// booksWrapper is used to unmarshal JSON with schema and work fields
+type booksWrapper struct {
+	Schema int    `json:"schema"`
+	Work   string `json:"work"`
+	Books  []Book `json:"books"`
+}
+
 // Table represents a mapping of OSIS codes to Books and aliases to OSIS codes.
 type Table struct {
 	ByOsis  map[string]Book
@@ -26,7 +33,11 @@ func NewTable(books []Book) (*Table, error) {
 		}
 		tbl.ByOsis[book.OSIS] = book
 		for _, alias := range book.Aliases {
-			tbl.ByAlias[alias] = book.OSIS
+			normalizedAlias := NormalizeAlias(alias)
+			tbl.ByAlias[normalizedAlias] = book.OSIS
+		}
+		if !contains(tbl.ByAlias, NormalizeAlias(book.OSIS)) {
+			tbl.ByAlias[NormalizeAlias(book.OSIS)] = book.OSIS
 		}
 	}
 
@@ -34,10 +45,10 @@ func NewTable(books []Book) (*Table, error) {
 }
 
 // LoadTableFromJSON loads a Table from JSON data.
-// The JSON should be an array of Book objects.
+// The JSON should have schema, work, and books fields with an array of Book objects.
 func LoadTableFromJSON(jsonData []byte) (*Table, error) {
-	var books []Book
-	if err := json.Unmarshal(jsonData, &books); err != nil {
+	var wrapper booksWrapper
+	if err := json.Unmarshal(jsonData, &wrapper); err != nil {
 		return nil, &BibleRefError{
 			Kind:    KindParse,
 			Err:     ErrBibleRefParseFailed,
@@ -46,5 +57,10 @@ func LoadTableFromJSON(jsonData []byte) (*Table, error) {
 		}
 	}
 
-	return NewTable(books)
+	return NewTable(wrapper.Books)
+}
+
+func contains(m map[string]string, key string) bool {
+	_, exists := m[key]
+	return exists
 }

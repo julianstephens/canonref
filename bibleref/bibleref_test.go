@@ -80,9 +80,10 @@ func TestTable_AliasNormalization(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
-			osis, ok := tbl.ByAlias[tc.alias]
+			normalizedAlias := bibleref.NormalizeAlias(tc.alias)
+			osis, ok := tbl.ByAlias[normalizedAlias]
 			if !ok {
-				t.Errorf("alias %q not found in table", tc.alias)
+				t.Errorf("alias %q (normalized: %q) not found in table", tc.alias, normalizedAlias)
 				return
 			}
 			if osis != tc.expected {
